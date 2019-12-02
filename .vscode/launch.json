@@ -1,0 +1,50 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Full Advent",
+            "program": "main/advent_runner.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "all"]
+        },
+        {
+            "name": "December 1st",
+            "program": "main/advent_runner.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "1"]
+        },
+        {
+            "name": "December 2nd",
+            "program": "main/advent_runner.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "2"]
+        },
+        {
+            "name": "December 3rd",
+            "program": "main/advent_runner.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "3"]
+        },
+        {
+            "name": "December 4th",
+            "program": "main/advent_runner.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "4"]
+        },
+        {
+            "name": "December 5th",
+            "program": "main/advent_runner.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "5"]
+        }
+    ]
+}

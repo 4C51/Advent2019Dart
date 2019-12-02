@@ -1,0 +1,9 @@
+name: Advent2018Dart
+dependencies:
+  AdventCore:
+    path: ../lib/advent_core
+  AdventCommon:
+    path: ../lib/advent_common
+  path: ^1.6.2
+  colorize: ^2.0.0
+  args: ^1.5.1

@@ -1,0 +1,7 @@
+name: AdventCommon
+version: 0.0.5
+environment:
+  sdk: ">=2.0.0"
+dependencies:
+  AdventCore:
+    path: ../advent_core/
