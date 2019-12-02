@@ -1,3 +1,5 @@
+import 'package:colorize/colorize.dart';
+
 import '../advent_files/advent_directory.dart';
 import 'runner.dart';
 import '../advent_files/advent_day.dart';
@@ -25,7 +27,7 @@ class DayRunner implements Runner {
   }
 
   Future solve() async {
-    print('Solving Day ${_day.day}...');
+    print(Colorize('Solving Day ${_day.day}...')..lightGreen());
     await _onReady;
     await _solver(_day, _input);
   }

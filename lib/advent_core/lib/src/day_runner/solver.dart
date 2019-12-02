@@ -1,7 +1,7 @@
 import 'package:AdventCore/advent_files.dart';
 
 abstract class Solver {
-  String day;
+  int get day;
 
   Future call(AdventDay day, List<String> input) async => Future;
 }

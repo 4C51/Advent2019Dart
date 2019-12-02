@@ -2,17 +2,15 @@ import 'package:AdventCommon/rocketry.dart';
 import 'package:AdventCore/advent_files.dart';
 import 'package:AdventCore/day_runner.dart';
 
-class SecondDay implements Solver {
-  String day = '2';
+class Day2 implements Solver {
+  final day = 2;
 
   call(AdventDay day, List<String> input) async {
-    var computer = Intcode();
-    computer.loadProgram(input[0]);
-    computer.writeMem(1, 12);
-    computer.writeMem(2, 2);
-    computer.execute();
-
-    print(computer.output.toString());
+    var computer = Intcode()
+      ..loadProgram(input[0])
+      ..writeMem(1, 12)
+      ..writeMem(2, 2)
+      ..execute();
 
     await day.writePart1(computer.output.toString());
 
@@ -21,10 +19,10 @@ class SecondDay implements Solver {
     search:
     for (var noun = 0; noun <= 99; noun++) {
       for (var verb = 0; verb <= 99; verb++) {
-        computer.reset();
-        computer.writeMem(1, noun);
-        computer.writeMem(2, verb);
-        computer.execute();
+        computer.reset()
+          ..writeMem(1, noun)
+          ..writeMem(2, verb)
+          ..execute();
 
         if (computer.output == 19690720) {
           haltCode = 100 * noun + verb;
@@ -33,7 +31,6 @@ class SecondDay implements Solver {
       }
     }
 
-    print(haltCode);
     await day.writePart2(haltCode.toString());
   }
 }

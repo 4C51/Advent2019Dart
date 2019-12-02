@@ -24,8 +24,8 @@ class AdventDirectory {
     _defaultAdventDir = new Directory(directory);
   }
 
-  AdventDay getDay(String day) {
-    var adventDay = _adventDays.firstWhere((dir) => basename(dir.path) == day, orElse: () => null);
+  AdventDay getDay(int day) {
+    var adventDay = _adventDays.firstWhere((dir) => basename(dir.path) == day.toString(), orElse: () => null);
 
     if (adventDay == null) {
       print(new Colorize('Error: Missing directory for day $day')..lightRed());

@@ -2,8 +2,8 @@ import 'package:AdventCore/advent_files.dart';
 import 'package:AdventCore/day_runner.dart';
 import 'package:AdventCommon/rocketry.dart';
 
-class FirstDay implements Solver {
-  String day = '1';
+class Day1 implements Solver {
+  final day = 1;
 
   call(AdventDay day, List<String> input) async {
     List<RocketEquation> calcs = [];
@@ -16,7 +16,6 @@ class FirstDay implements Solver {
       totalInitialFuel += calcs[i].initialFuel;
     }
 
-    print('Part 1: ${totalInitialFuel.toString()}');
     await day.writePart1(totalInitialFuel.toString());
 
     var totalFuel = 0;
@@ -24,7 +23,6 @@ class FirstDay implements Solver {
       totalFuel += calcs[i].totalFuel;
     }
 
-    print('Part 2: ${totalFuel.toString()}');
     await day.writePart2(totalFuel.toString());
   }
 }

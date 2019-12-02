@@ -1,16 +1,9 @@
-import 'package:AdventCore/day_runner.dart';
 import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
 import 'package:AdventCore/advent_files.dart';
 import 'dart:io';
 
-import 'days/day1.dart';
-import 'days/day2.dart';
-
-var days = [
-  () => DayRunner.run(new FirstDay()),
-  () => DayRunner.run(new SecondDay())
-];
+import 'advent_calendar.dart';
 
 ArgResults argResults;
 
@@ -28,11 +21,11 @@ void main(List<String> arguments) async {
 
   try {
     if (dayInput == 'all') {
-      for (var dayRunner in days) {
-        await dayRunner();
+      for (var i = 1; i <= 25; i++) {
+        await AdventCalendar.runDay(i);
       }
     } else {
-      await days[int.parse(dayInput) - 1]();
+      await AdventCalendar.runDay(int.parse(dayInput));
     }
   } on AdventDirectoryMissingException {} on AdventDayInputMissingException {}
 }

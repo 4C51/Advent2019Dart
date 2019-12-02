@@ -1,7 +1,7 @@
 name: AdventCore
 version: 0.0.1
 environment:
-  sdk: ">=2.0.0"
+  sdk: ">=2.1.0"
 dependencies:
   path: ^1.6.2
   colorize: ^2.0.0
