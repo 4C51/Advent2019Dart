@@ -7,9 +7,8 @@ class Day3 implements Solver {
 
   call(AdventDay day, List<String> input) async {
     var circuit = FuelCircuit();
-    circuit.addPath('R75,D30,R83,U83,L12,D49,R71,U7,L72', 1);
-    circuit.addPath('U62,R66,U55,R34,D71,R55,D58,R83', 2);
-    print(circuit.getIntersections());
+    circuit.addPath(input[0], 1);
+    circuit.addPath(input[1], 2);
     day.writePart1(circuit.origin.distanceTo(circuit.getClosestIntersection()).toString());
   }
 }
