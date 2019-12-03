@@ -5,7 +5,7 @@ class AdventCalendar {
   static Map<int, Solver> days = {
     1: Day1(),
     2: Day2(),
-    //3: Day3(),
+    3: Day3(),
     //4: Day4(),
     //5: Day5(),
     //6: Day6(),
@@ -32,7 +32,7 @@ class AdventCalendar {
 
   static Future<dynamic> runDay(int day) async {
     var solver = days[day];
-    if (solver == null) return; 
+    if (solver == null) return;
     await DayRunner.run(solver);
   }
 }
