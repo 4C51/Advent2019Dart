@@ -10,5 +10,6 @@ class Day3 implements Solver {
     circuit.addPath(input[0], 1);
     circuit.addPath(input[1], 2);
     day.writePart1(circuit.origin.distanceTo(circuit.getClosestIntersection()).toString());
+    day.writePart2(circuit.getLowestDelayIntersection().signalDelay.toString());
   }
 }
