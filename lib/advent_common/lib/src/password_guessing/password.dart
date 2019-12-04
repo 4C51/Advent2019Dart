@@ -17,7 +17,7 @@ class Password {
     possiblePasswords.clear();
 
     for (var i = lowerBound; i <= upperBound; i++) {
-      if (_doubleRule(i) && _increasingRule(i) && _strictDoubleRule(i))
+      if (_increasingRule(i) && _strictDoubleRule(i) && _doubleRule(i))
         possiblePasswords.add(i);
     }
 
@@ -25,9 +25,9 @@ class Password {
   }
 
   testPassword(int guess) {
-    return _doubleRule(guess) &&
-        _increasingRule(guess) &&
-        _strictDoubleRule(guess);
+    return _increasingRule(guess) &&
+        _strictDoubleRule(guess) &&
+        _doubleRule(guess);
   }
 
   _doubleRule(int guess) {
@@ -37,39 +37,20 @@ class Password {
 
   _strictDoubleRule(int guess) {
     if (!strictDoubleRule) return true;
+
     var chars = guess.toString().split('').map((c) => int.parse(c)).toList();
-    var hasDouble = false;
-    var lastChar = 0;
-    var groupCount = 1;
 
     for (var i = 0; i < chars.length; i++) {
-      if (lastChar != chars[i] && groupCount == 2) {
-        hasDouble = true;
-        break;
-      }
-
-      if (lastChar == chars[i])
-        groupCount++;
-      else
-        groupCount = 1;
-      lastChar = chars[i];
+      if (chars.lastIndexOf(chars[i]) - chars.indexOf(chars[i]) == 1)
+        return true;
     }
 
-    if (groupCount == 2) hasDouble = true;
-
-    return hasDouble;
+    return false;
   }
 
   _increasingRule(int guess) {
     if (!increasingRule) return true;
-    var chars = guess.toString().split('').map((c) => int.parse(c)).toList();
-    var minimum = 0;
-    for (var i = 0; i < chars.length; i++) {
-      if (chars[i] < minimum) {
-        return false;
-      }
-      minimum = chars[i];
-    }
-    return true;
+
+    return int.parse((guess.toString().split('')..sort()).join()) == guess;
   }
 }
