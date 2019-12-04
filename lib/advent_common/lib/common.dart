@@ -6,3 +6,4 @@ export 'fabric_slicing.dart';
 export 'repose_record.dart';
 export 'alchemical_reduction.dart';
 export 'manhatten_grid.dart';
+export 'password_guessing.dart';
