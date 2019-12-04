@@ -10,6 +10,7 @@ class AdventDay {
   File _input;
   File _outputPart1;
   File _outputPart2;
+  Stopwatch _stopwatch = Stopwatch();
 
   /**
    * Creates an [AdventDay] object to load and write data
@@ -40,13 +41,18 @@ class AdventDay {
 
   /// Write the first part of the advent day output to <day>/output_part1.txt
   Future writePart1(String data) async {
-    print('Part 1: ${data}');
+    print('Part 1 [$executionTime]: $data');
+    _stopwatch.reset();
     return _writeOutput(_outputPart1, data);
   }
 
   /// Write the second part of the advent day output to <day>/output_part2.txt
   Future writePart2(String data) async {
-    print('Part 2: ${data}\n');
+    print('Part 2 [$executionTime]: $data\n');
     return _writeOutput(_outputPart2, data);
   }
+
+  start() => _stopwatch.start();
+
+  String get executionTime => '${_stopwatch.elapsed.inMilliseconds}ms';
 }

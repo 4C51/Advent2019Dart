@@ -29,6 +29,7 @@ class DayRunner implements Runner {
   Future solve() async {
     print(Colorize('Solving Day ${_day.day}...')..lightGreen());
     await _onReady;
+    _day.start();
     await _solver(_day, _input);
   }
 
