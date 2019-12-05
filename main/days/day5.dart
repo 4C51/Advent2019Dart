@@ -13,6 +13,8 @@ class Day5 implements Solver {
 
     await day.writePart1(computer.output.toString());
 
-    await day.writePart2('');
+    computer.reset()..execute(5);
+
+    await day.writePart2(computer.output.toString());
   }
 }

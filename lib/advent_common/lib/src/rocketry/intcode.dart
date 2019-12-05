@@ -45,6 +45,10 @@ class Intcode {
       2: _opcodeMultiply,
       3: _opcodeInput,
       4: _opcodeOutput,
+      5: _opcodeJumpIfTrue,
+      6: _opcodeJumpIfFalse,
+      7: _opcodeLessThan,
+      8: _opcodeEquals,
       99: (_) => true
     };
 
@@ -83,6 +87,40 @@ class Intcode {
     ins.setParams(_getParams(1));
     _output = ins.params[0];
     _pointer += 2;
+    return false;
+  }
+
+  _opcodeJumpIfTrue(Instruction ins) {
+    ins.setParams(_getParams(2));
+    if (ins.params[0] != 0) {
+      _pointer = ins.params[1];
+    } else {
+      _pointer += 3;
+    }
+    return false;
+  }
+
+  _opcodeJumpIfFalse(Instruction ins) {
+    ins.setParams(_getParams(2));
+    if (ins.params[0] == 0) {
+      _pointer = ins.params[1];
+    } else {
+      _pointer += 3;
+    }
+    return false;
+  }
+
+  _opcodeLessThan(Instruction ins) {
+    ins.setParams(_getParams(3), 2);
+    _memory[ins.outputAddress] = ins.params[0] < ins.params[1] ? 1 : 0;
+    _pointer += 4;
+    return false;
+  }
+
+  _opcodeEquals(Instruction ins) {
+    ins.setParams(_getParams(3), 2);
+    _memory[ins.outputAddress] = ins.params[0] == ins.params[1] ? 1 : 0;
+    _pointer += 4;
     return false;
   }
 }
