@@ -4,7 +4,7 @@ export 'days/day1.dart';
 export 'days/day2.dart';
 export 'days/day3.dart';
 export 'days/day4.dart';
-//export 'days/day5.dart';
+export 'days/day5.dart';
 //export 'days/day6.dart';
 //export 'days/day7.dart';
 //export 'days/day8.dart';
