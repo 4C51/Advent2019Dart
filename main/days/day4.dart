@@ -6,11 +6,11 @@ class Day4 implements Solver {
   final day = 4;
 
   @override
-  Future call(AdventDay day, List<String> input) {
+  Future call(AdventDay day, List<String> input) async {
     var password = Password();
     password.setRange(input[0]);
-    day.writePart1(password.countCandidates().toString());
+    await day.writePart1(password.countCandidates().toString());
     password.strictDoubleRule = true;
-    day.writePart2(password.countCandidates().toString());
+    await day.writePart2(password.countCandidates().toString());
   }
 }
