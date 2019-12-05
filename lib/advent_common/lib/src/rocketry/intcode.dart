@@ -63,21 +63,21 @@ class Intcode {
   }
 
   _opcodeAdd(Instruction ins) {
-    ins.setParams(_getParams(3), 2);
+    ins.setParams(_getParams(3), true);
     _memory[ins.outputAddress] = ins.params[0] + ins.params[1];
     _pointer += 4;
     return false;
   }
 
   _opcodeMultiply(Instruction ins) {
-    ins.setParams(_getParams(3), 2);
+    ins.setParams(_getParams(3), true);
     _memory[ins.outputAddress] = ins.params[0] * ins.params[1];
     _pointer += 4;
     return false;
   }
 
   _opcodeInput(Instruction ins) {
-    ins.setParams(_getParams(1), 0);
+    ins.setParams(_getParams(1), true);
     _memory[ins.outputAddress] = _input;
     _pointer += 2;
     return false;
@@ -111,14 +111,14 @@ class Intcode {
   }
 
   _opcodeLessThan(Instruction ins) {
-    ins.setParams(_getParams(3), 2);
+    ins.setParams(_getParams(3), true);
     _memory[ins.outputAddress] = ins.params[0] < ins.params[1] ? 1 : 0;
     _pointer += 4;
     return false;
   }
 
   _opcodeEquals(Instruction ins) {
-    ins.setParams(_getParams(3), 2);
+    ins.setParams(_getParams(3), true);
     _memory[ins.outputAddress] = ins.params[0] == ins.params[1] ? 1 : 0;
     _pointer += 4;
     return false;
@@ -138,7 +138,7 @@ class Instruction {
     opcode = insCode % 100;
   }
 
-  setParams(List<int> params, [int outputParam]) {
+  setParams(List<int> params, [bool hasOutput = false]) {
     _params = params;
     _modes = (insCode ~/ 100)
         .toString()
@@ -150,7 +150,8 @@ class Instruction {
         .toList();
 
     for (var i = 0; i < params.length; i++) {
-      _params[i] = _getParamValue(_modes[i], params[i], outputParam == i);
+      _params[i] = _getParamValue(
+          _modes[i], params[i], hasOutput && i + 1 == params.length);
     }
   }
 
