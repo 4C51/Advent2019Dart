@@ -7,9 +7,7 @@ class Intcode {
 
   Intcode loadProgram(String programInput) {
     _program = programInput;
-    var programInputs =
-        programInput.split(',').map((i) => int.parse(i)).toList();
-    _memory = programInputs;
+    _memory = programInput.split(',').map((i) => int.parse(i)).toList();
     return this;
   }
 
@@ -58,42 +56,38 @@ class Intcode {
         (throw 'Invalid opcode: ${ins.opcode}');
   }
 
-  List<int> _getParams(int inputCount) {
-    return _memory.getRange(_pointer + 1, _pointer + 1 + inputCount).toList();
-  }
-
   _opcodeAdd(Instruction ins) {
-    ins.setParams(_getParams(3), true);
-    _memory[ins.outputAddress] = ins.params[0] + ins.params[1];
+    ins(3, true);
+    _memory[ins.output] = ins[0] + ins[1];
     _pointer += 4;
     return false;
   }
 
   _opcodeMultiply(Instruction ins) {
-    ins.setParams(_getParams(3), true);
-    _memory[ins.outputAddress] = ins.params[0] * ins.params[1];
+    ins(3, true);
+    _memory[ins.output] = ins[0] * ins[1];
     _pointer += 4;
     return false;
   }
 
   _opcodeInput(Instruction ins) {
-    ins.setParams(_getParams(1), true);
-    _memory[ins.outputAddress] = _input;
+    ins(1, true);
+    _memory[ins.output] = _input;
     _pointer += 2;
     return false;
   }
 
   _opcodeOutput(Instruction ins) {
-    ins.setParams(_getParams(1));
-    _output = ins.params[0];
+    ins(1);
+    _output = ins[0].value;
     _pointer += 2;
     return false;
   }
 
   _opcodeJumpIfTrue(Instruction ins) {
-    ins.setParams(_getParams(2));
-    if (ins.params[0] != 0) {
-      _pointer = ins.params[1];
+    ins(2);
+    if (ins[0] != 0) {
+      _pointer = ins[1].value;
     } else {
       _pointer += 3;
     }
@@ -101,9 +95,9 @@ class Intcode {
   }
 
   _opcodeJumpIfFalse(Instruction ins) {
-    ins.setParams(_getParams(2));
-    if (ins.params[0] == 0) {
-      _pointer = ins.params[1];
+    ins(2);
+    if (ins[0] == 0) {
+      _pointer = ins[1].value;
     } else {
       _pointer += 3;
     }
@@ -111,15 +105,15 @@ class Intcode {
   }
 
   _opcodeLessThan(Instruction ins) {
-    ins.setParams(_getParams(3), true);
-    _memory[ins.outputAddress] = ins.params[0] < ins.params[1] ? 1 : 0;
+    ins(3, true);
+    _memory[ins.output] = ins[0] < ins[1] ? 1 : 0;
     _pointer += 4;
     return false;
   }
 
   _opcodeEquals(Instruction ins) {
-    ins.setParams(_getParams(3), true);
-    _memory[ins.outputAddress] = ins.params[0] == ins.params[1] ? 1 : 0;
+    ins(3, true);
+    _memory[ins.output] = ins[0] == ins[1] ? 1 : 0;
     _pointer += 4;
     return false;
   }
@@ -129,45 +123,68 @@ class Instruction {
   final int insCode;
   final List<int> _memory;
   final int address;
-  List<int> _params;
-  List<Mode> _modes;
-  int _outputAddress;
+  List<Parameter> _params = List<Parameter>();
   int opcode;
 
   Instruction(this.insCode, this.address, this._memory) {
     opcode = insCode % 100;
   }
 
-  setParams(List<int> params, [bool hasOutput = false]) {
-    _params = params;
-    _modes = (insCode ~/ 100)
-        .toString()
-        .padLeft(3, '0')
-        .split('')
-        .reversed
-        .toList()
-        .map<Mode>((m) => Mode.values[int.parse(m)])
-        .toList();
+  call(int inputCount, [bool hasOutput = false]) {
+    var params = _memory.getRange(address + 1, address + 1 + inputCount).toList();
+    _params.length = params.length;
 
-    for (var i = 0; i < params.length; i++) {
-      _params[i] = _getParamValue(
-          _modes[i], params[i], hasOutput && i + 1 == params.length);
+    for (var i = 0, modeBits = insCode ~/ 100; i < params.length; i++, modeBits ~/= 10) {
+      _params[i] = Parameter(params[i], Mode.values[modeBits % 10], hasOutput && i + 1 == params.length, _memory);
     }
   }
 
-  get params => _params;
+  List<Parameter> get params => _params;
 
-  get outputAddress => _outputAddress;
+  get output => _params.last.value;
 
-  int _getParamValue(Mode mode, int value, [bool isOutput = false]) {
-    if (isOutput) {
-      _outputAddress = value;
-      return value;
+  operator [](int index) {
+    return _params[index];
+  } 
+}
+
+class Parameter {
+  final Mode mode;
+  final int _value;
+  final bool isOutput;
+  final List<int> _memory;
+
+  Parameter(this._value, this.mode, this.isOutput, this._memory);
+
+  int get value {
+    if (isOutput) return _value;
+    if (mode == Mode.Position) return _memory[_value];
+    if (mode == Mode.Immediate) return _value;
+    throw 'Unknown mode.';
+  }
+
+  operator ==(dynamic other) {
+    if (other is Parameter) {
+      return value == other.value;
     }
+    
+    return value == other;
+  }
 
-    if (mode == Mode.Position) return _memory[value];
-    if (mode == Mode.Immediate) return value;
-    throw 'Unknown mode';
+  operator +(Parameter other) {
+    return value + other.value;
+  }
+
+  operator *(Parameter other) {
+    return value * other.value;
+  }
+
+  operator <(Parameter other) {
+    return value < other.value;
+  }
+
+  operator >(Parameter other) {
+    return value > other.value;
   }
 }
 
