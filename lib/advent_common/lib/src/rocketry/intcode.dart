@@ -11,11 +11,11 @@ class Intcode {
     return this;
   }
 
-  Intcode execute([int input]) {
+  Intcode execute([dynamic input]) {
     if (!_memory.programLoaded) throw 'Load program first.';
     var haltAndCatchFire = false;
     _pointer = MemPointer(_memory);
-    _memory.input = input;
+    _memory.input = IO.Input(input);
 
     while (!haltAndCatchFire) {
       haltAndCatchFire = Operation.create(_pointer).exec();
@@ -31,7 +31,8 @@ class Intcode {
 
   int readMem(int address) => _memory[address];
 
-  get output => _memory.output != null ? _memory.output : _memory[0];
+  IO get output => !_memory.output.isEmpty ? _memory.output : IO.Output(_memory[0]);
+  int get outputLast => _memory.output.last;
 
   readMemAll() => _memory.toString();
 
@@ -41,11 +42,13 @@ class Intcode {
 class Memory {
   List<int> _memory = List<int>();
   bool programLoaded = false;
-  int input;
-  int output;
+  IO input;
+  final IO output = IO.Output();
 
   load(List<int> data) {
     _memory = data;
+    input?.clear();
+    output.clear();
     programLoaded = true;
   }
 
@@ -100,8 +103,8 @@ class MemPointer {
 
   void write(int address, int value) => _memory(address, value);
 
-  int get input => _memory.input;
-  set output(int val) => _memory.output = val;
+  int get input => _memory.input.read();
+  set output(int val) => _memory.output.write(val);
 
   operator [](int address) => _memory[address];
 }
@@ -127,6 +130,45 @@ class Parameter {
   operator *(Parameter other) => value * other.value;
   operator <(Parameter other) => value < other.value;
   operator >(Parameter other) => value > other.value;
+}
+
+class IO {
+  final List<int> _memory = List<int>();
+  final bool isInput;
+  int _pointer = 0;
+
+  IO(this.isInput, [dynamic data]) {
+    if (data != null) _memory.addAll(data is int ? [data] : data);
+  }
+
+  int operator [](int address) => _memory[address];
+  bool operator ==(dynamic other) => other is IO ? this == other : last == other;
+
+  bool get isEmpty => _memory.isEmpty;
+
+  int get last => _memory.last;
+
+  int read([int address]) {
+    if (!isInput) throw 'Cannot read from Output';
+    var val = _memory[_pointer];
+    _pointer++;
+    return val;
+  }
+
+  write(int value, [int address]) {
+    if (isInput) throw 'Cannot write to Input';
+    if (value == 0) return;
+    _memory.add(value);
+  }
+
+  flush() => _memory;
+  clear() => _memory.clear();
+
+  factory IO.Input([dynamic data]) => IO(true, data);
+  factory IO.Output([dynamic data]) => IO(false, data);
+
+  @override
+  String toString() => _memory.join(',');
 }
 
 enum Mode { Position, Immediate }
