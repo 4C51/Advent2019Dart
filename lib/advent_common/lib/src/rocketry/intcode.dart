@@ -1,191 +1,132 @@
+import 'intcode_operations.dart';
+
 class Intcode {
   String _program;
-  List<int> _memory;
-  int _pointer;
-  int _input;
-  int _output;
+  final _memory = Memory();
+  MemPointer _pointer;
 
   Intcode loadProgram(String programInput) {
     _program = programInput;
-    _memory = programInput.split(',').map((i) => int.parse(i)).toList();
+    _memory.load(programInput.split(',').map((i) => int.parse(i)).toList());
     return this;
   }
 
   Intcode execute([int input]) {
-    if (_memory == null) throw 'Load program first.';
+    if (!_memory.programLoaded) throw 'Load program first.';
     var haltAndCatchFire = false;
-    _pointer = 0;
-    _input = input;
+    _pointer = MemPointer(_memory);
+    _memory.input = input;
 
     while (!haltAndCatchFire) {
-      haltAndCatchFire = _opcodeExecute(_memory[_pointer]);
+      haltAndCatchFire = Operation.create(_pointer).exec();
     }
 
     return this;
   }
 
   Intcode writeMem(int address, int value) {
-    _memory[address] = value;
+    _memory(address, value);
     return this;
   }
 
   int readMem(int address) => _memory[address];
 
-  get output => _output != null ? _output : _memory[0];
+  get output => _memory.output != null ? _memory.output : _memory[0];
 
-  readMemAll() => _memory.join(',');
+  readMemAll() => _memory.toString();
 
   reset() => loadProgram(_program);
+}
 
-  _opcodeExecute(int insCode) {
-    var opcodeMap = {
-      1: _opcodeAdd,
-      2: _opcodeMultiply,
-      3: _opcodeInput,
-      4: _opcodeOutput,
-      5: _opcodeJumpIfTrue,
-      6: _opcodeJumpIfFalse,
-      7: _opcodeLessThan,
-      8: _opcodeEquals,
-      99: (_) => true
-    };
+class Memory {
+  List<int> _memory = List<int>();
+  bool programLoaded = false;
+  int input;
+  int output;
 
-    var ins = Instruction(insCode, _pointer, _memory);
-
-    return opcodeMap[ins.opcode]?.call(ins) ??
-        (throw 'Invalid opcode: ${ins.opcode}');
+  load(List<int> data) {
+    _memory = data;
+    programLoaded = true;
   }
 
-  _opcodeAdd(Instruction ins) {
-    ins(3, true);
-    _memory[ins.output] = ins[0] + ins[1];
-    _pointer += 4;
-    return false;
-  }
+  List<int> getRange(int start, int end) =>
+      _memory.getRange(start, end).toList();
 
-  _opcodeMultiply(Instruction ins) {
-    ins(3, true);
-    _memory[ins.output] = ins[0] * ins[1];
-    _pointer += 4;
-    return false;
-  }
+  operator [](int address) => _memory[address];
+  call(int address, int value) => _memory[address] = value;
 
-  _opcodeInput(Instruction ins) {
-    ins(1, true);
-    _memory[ins.output] = _input;
-    _pointer += 2;
-    return false;
-  }
-
-  _opcodeOutput(Instruction ins) {
-    ins(1);
-    _output = ins[0].value;
-    _pointer += 2;
-    return false;
-  }
-
-  _opcodeJumpIfTrue(Instruction ins) {
-    ins(2);
-    if (ins[0] != 0) {
-      _pointer = ins[1].value;
-    } else {
-      _pointer += 3;
-    }
-    return false;
-  }
-
-  _opcodeJumpIfFalse(Instruction ins) {
-    ins(2);
-    if (ins[0] == 0) {
-      _pointer = ins[1].value;
-    } else {
-      _pointer += 3;
-    }
-    return false;
-  }
-
-  _opcodeLessThan(Instruction ins) {
-    ins(3, true);
-    _memory[ins.output] = ins[0] < ins[1] ? 1 : 0;
-    _pointer += 4;
-    return false;
-  }
-
-  _opcodeEquals(Instruction ins) {
-    ins(3, true);
-    _memory[ins.output] = ins[0] == ins[1] ? 1 : 0;
-    _pointer += 4;
-    return false;
-  }
+  @override
+  String toString() => _memory.join(',');
 }
 
 class Instruction {
-  final int insCode;
-  final List<int> _memory;
-  final int address;
+  final MemPointer _pointer;
   List<Parameter> _params = List<Parameter>();
   int opcode;
 
-  Instruction(this.insCode, this.address, this._memory) {
-    opcode = insCode % 100;
-  }
-
-  call(int inputCount, [bool hasOutput = false]) {
-    var params = _memory.getRange(address + 1, address + 1 + inputCount).toList();
+  Instruction(this._pointer, int paramCount, [bool hasOutput = false]) {
+    var params = _pointer.getParams(paramCount);
     _params.length = params.length;
 
-    for (var i = 0, modeBits = insCode ~/ 100; i < params.length; i++, modeBits ~/= 10) {
-      _params[i] = Parameter(params[i], Mode.values[modeBits % 10], hasOutput && i + 1 == params.length, _memory);
+    for (var i = 0, modeBits = _pointer.current ~/ 100;
+        i < params.length;
+        i++, modeBits ~/= 10) {
+      _params[i] = Parameter(params[i], Mode.values[modeBits % 10],
+          hasOutput && i + 1 == params.length, _pointer);
     }
   }
 
   List<Parameter> get params => _params;
 
-  get output => _params.last.value;
+  int get output => _params.last.value;
 
-  operator [](int index) {
-    return _params[index];
-  } 
+  Parameter operator [](int index) => _params[index];
+}
+
+class MemPointer {
+  final Memory _memory;
+  int _pointer;
+
+  MemPointer(this._memory, [this._pointer = 0]);
+
+  void advance([int val = 1]) => _pointer += val;
+  void call(int val) => _pointer = val;
+
+  int get current => _memory[_pointer];
+  int get opcode => current % 100;
+
+  List<int> getParams(int count) =>
+      _memory.getRange(_pointer + 1, _pointer + 1 + count);
+
+  void write(int address, int value) => _memory(address, value);
+
+  int get input => _memory.input;
+  set output(int val) => _memory.output = val;
+
+  operator [](int address) => _memory[address];
 }
 
 class Parameter {
   final Mode mode;
   final int _value;
   final bool isOutput;
-  final List<int> _memory;
+  final MemPointer _pointer;
 
-  Parameter(this._value, this.mode, this.isOutput, this._memory);
+  Parameter(this._value, this.mode, this.isOutput, this._pointer);
 
   int get value {
     if (isOutput) return _value;
-    if (mode == Mode.Position) return _memory[_value];
+    if (mode == Mode.Position) return _pointer[_value];
     if (mode == Mode.Immediate) return _value;
     throw 'Unknown mode.';
   }
 
-  operator ==(dynamic other) {
-    if (other is Parameter) {
-      return value == other.value;
-    }
-    
-    return value == other;
-  }
-
-  operator +(Parameter other) {
-    return value + other.value;
-  }
-
-  operator *(Parameter other) {
-    return value * other.value;
-  }
-
-  operator <(Parameter other) {
-    return value < other.value;
-  }
-
-  operator >(Parameter other) {
-    return value > other.value;
-  }
+  operator ==(dynamic other) =>
+      other is Parameter ? value == other.value : value == other;
+  operator +(Parameter other) => value + other.value;
+  operator *(Parameter other) => value * other.value;
+  operator <(Parameter other) => value < other.value;
+  operator >(Parameter other) => value > other.value;
 }
 
 enum Mode { Position, Immediate }
