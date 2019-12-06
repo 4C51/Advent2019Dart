@@ -9,42 +9,70 @@
             "program": "main/advent_runner.dart",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "all"]
+            "args": [
+                "-d",
+                "all"
+            ]
         },
         {
             "name": "December 1st",
             "program": "main/advent_runner.dart",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "1"]
+            "args": [
+                "-d",
+                "1"
+            ]
         },
         {
             "name": "December 2nd",
             "program": "main/advent_runner.dart",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "2"]
+            "args": [
+                "-d",
+                "2"
+            ]
         },
         {
             "name": "December 3rd",
             "program": "main/advent_runner.dart",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "3"]
+            "args": [
+                "-d",
+                "3"
+            ]
         },
         {
             "name": "December 4th",
             "program": "main/advent_runner.dart",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "4"]
+            "args": [
+                "-d",
+                "4"
+            ]
         },
         {
             "name": "December 5th",
             "program": "main/advent_runner.dart",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "5"]
+            "args": [
+                "-d",
+                "5"
+            ]
+        },
+        {
+            "name": "December 6th",
+            "program": "main/advent_runner.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-d",
+                "6"
+            ]
         }
     ]
 }
