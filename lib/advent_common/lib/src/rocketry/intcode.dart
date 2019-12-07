@@ -31,7 +31,8 @@ class Intcode {
 
   int readMem(int address) => _memory[address];
 
-  IO get output => !_memory.output.isEmpty ? _memory.output : IO.Output(_memory[0]);
+  IO get output =>
+      !_memory.output.isEmpty ? _memory.output : IO.Output(_memory[0]);
   int get outputLast => _memory.output.last;
 
   readMemAll() => _memory.toString();
@@ -142,7 +143,8 @@ class IO {
   }
 
   int operator [](int address) => _memory[address];
-  bool operator ==(dynamic other) => other is IO ? this == other : last == other;
+  bool operator ==(dynamic other) =>
+      other is IO ? this == other : last == other;
 
   bool get isEmpty => _memory.isEmpty;
 
@@ -157,7 +159,6 @@ class IO {
 
   write(int value, [int address]) {
     if (isInput) throw 'Cannot write to Input';
-    if (value == 0) return;
     _memory.add(value);
   }
 

@@ -73,6 +73,16 @@
                 "-d",
                 "6"
             ]
+        },
+        {
+            "name": "December 7th",
+            "program": "main/advent_runner.dart",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-d",
+                "7"
+            ]
         }
     ]
 }
