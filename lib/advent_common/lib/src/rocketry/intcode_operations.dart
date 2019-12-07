@@ -36,6 +36,14 @@ abstract class Operation {
         return LessThanOp(pointer);
       case 8:
         return EqualsOp(pointer);
+      case 9:
+        return C9Op(pointer);
+      case 10:
+        return C10Op(pointer);
+      case 11:
+        return C11Op(pointer);
+      case 12:
+        return C12Op(pointer);
       case 99:
         return HaltOp(pointer);
       default:
@@ -148,6 +156,54 @@ class EqualsOp extends Operation {
   @override
   bool exec() {
     _pointer.write(_ins.output, _ins[0] == _ins[1] ? 1 : 0);
+    return super.exec();
+  }
+}
+
+class C9Op extends Operation {
+  final opcode = 9;
+
+  C9Op(MemPointer pointer) : super(pointer);
+
+  @override
+  bool exec() {
+    // TODO: implement exec
+    return super.exec();
+  }
+}
+
+class C10Op extends Operation {
+  final opcode = 10;
+
+  C10Op(MemPointer pointer) : super(pointer);
+
+  @override
+  bool exec() {
+    // TODO: implement exec
+    return super.exec();
+  }
+}
+
+class C11Op extends Operation {
+  final opcode = 9;
+
+  C11Op(MemPointer pointer) : super(pointer);
+
+  @override
+  bool exec() {
+    // TODO: implement exec
+    return super.exec();
+  }
+}
+
+class C12Op extends Operation {
+  final opcode = 9;
+
+  C12Op(MemPointer pointer) : super(pointer);
+
+  @override
+  bool exec() {
+    // TODO: implement exec
     return super.exec();
   }
 }
