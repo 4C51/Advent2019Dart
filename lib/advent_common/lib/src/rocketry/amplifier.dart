@@ -2,24 +2,26 @@ import 'package:AdventCommon/rocketry.dart';
 import 'package:AdventCore/core.dart';
 
 class Amplifier {
-  final computer = Intcode();
+  final computer = IntcodeComputer();
   int phaseSetting;
   Amplifier nextAmp;
 
   Amplifier(String ctrlProgram) {
-    computer.loadProgram(ctrlProgram);
+    computer.loadProgram('control', ctrlProgram);
   }
 
-  start(int signal) {
+  Future<IO> start(int signal) async {
     if (phaseSetting == null) throw 'No phase setting!';
-    computer.reset();
-    computer.execute([phaseSetting, signal]);
-    return nextAmp?.start(computer.outputLast) ?? computer.outputLast;
+    var result = await computer
+        .run('control', input: [phaseSetting, signal]).then<IO>((result) {
+      return Future.value(nextAmp?.start(result.last) ?? result);
+    });
+
+    //var output = await nextAmp?.start(result.last) ?? result.last;
+    return result;
   }
 
   setPhase(int phase) => phaseSetting = phase;
-
-  get output => computer.outputLast;
 }
 
 class AmpCircuit {
@@ -29,11 +31,15 @@ class AmpCircuit {
   int _max = 0;
   List<int> _maxPhases;
 
-  AmpCircuit(this.ctrlProgram, [this.ampCount = 5]) {
+  AmpCircuit(this.ctrlProgram, {loop = false, this.ampCount = 5}) {
     for (var i = 0; i < ampCount; i++) {
       var amp = Amplifier(ctrlProgram);
       if (amplifiers.isNotEmpty) amplifiers.last?.nextAmp = amp;
       amplifiers.add(amp);
+    }
+
+    if (loop) {
+      amplifiers.last.nextAmp = amplifiers.first;
     }
   }
 
@@ -43,13 +49,34 @@ class AmpCircuit {
     }
   }
 
-  findMax(int signal) {
+  findMax(int signal) async {
     var phasePerms = Permutations<int>([for (var i = 0; i < ampCount; i++) i]);
-    phasePerms.forEach((phases) {
+
+    var run = (phases) async {
       _setPhases(phases);
-      var ampSignal = amplifiers.first.start(signal);
-      if (ampSignal > _max) {
-        _max = ampSignal;
+      var ampSignal = await amplifiers.first.start(signal);
+      if (ampSignal.last > _max) {
+        _max = ampSignal.last;
+        _maxPhases = phases;
+      }
+    };
+
+    var iter = phasePerms.iterator;
+    while (iter.moveNext()) {
+      await (run(iter.current));
+    }
+
+    return _max;
+  }
+
+  findMaxLoop(int signal) {
+    var phasePerms =
+        Permutations<int>([for (var i = 5; i < 5 + ampCount; i++) i]);
+    phasePerms.forEach((phases) async {
+      _setPhases(phases);
+      var ampSignal = await amplifiers.first.start(signal);
+      if (ampSignal.last > _max) {
+        _max = ampSignal.last;
         _maxPhases = phases;
       }
     });

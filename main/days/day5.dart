@@ -7,14 +7,16 @@ class Day5 implements Solver {
 
   @override
   Future call(AdventDay day, List<String> input) async {
-    var computer = Intcode()
-      ..loadProgram(input[0])
-      ..execute(1);
+    var computer = IntcodeComputer()..loadProgram('TEST', input[0]);
 
-    await day.writePart1(computer.output.toString());
+    day.startPart1();
+    computer.run('TEST', input: [1]).then((result) {
+      day.writePart1(result.last.toString());
+    });
 
-    computer.reset()..execute(5);
-
-    await day.writePart2(computer.output.toString());
+    day.startPart2();
+    computer.run('TEST', input: [5]).then((result) {
+      day.writePart2(result.toString());
+    });
   }
 }

@@ -1,43 +1,98 @@
+import 'dart:async';
+import 'dart:collection';
+
 import 'intcode_operations.dart';
 
-class Intcode {
+class IntcodeComputer {
   String _program;
   final _memory = Memory();
   MemPointer _pointer;
+  Timer _timer;
+  HashSet<Thread> _threads = HashSet();
+  HashSet<Program> _programs = HashSet();
 
-  Intcode loadProgram(String programInput) {
-    _program = programInput;
-    _memory.load(programInput.split(',').map((i) => int.parse(i)).toList());
+  IntcodeComputer loadProgram(String name, String programInput) {
+    _programs.add(Program(name, programInput));
     return this;
   }
 
-  Intcode execute([dynamic input]) {
-    if (!_memory.programLoaded) throw 'Load program first.';
-    var haltAndCatchFire = false;
-    _pointer = MemPointer(_memory);
-    _memory.input = IO.Input(input);
+  Future<IO> run(String programName,
+      {List<int> input, Map<int, int> instructionOverrides}) {
+    var thread = Thread(_getProgram(programName), input ?? [],
+        instructionOverrides: instructionOverrides);
+    _threads.add(thread);
+    return thread.onComplete.whenComplete(() {
+      _threads.remove(thread);
+    });
+  }
 
-    while (!haltAndCatchFire) {
-      haltAndCatchFire = Operation.create(_pointer).exec();
+  killAll() {
+    _threads.forEach((t) => t.kill());
+    _threads.clear();
+  }
+
+  _getProgram(String name) => _programs.singleWhere((p) => p._name == name);
+
+  reset() => () => {};
+}
+
+class Thread {
+  Memory _memory = Memory();
+  MemPointer _pointer;
+  Program _program;
+  Completer<IO> _completer;
+  Timer _timer;
+  bool killed = false;
+
+  Thread(this._program, List<int> input, {Map<int, int> instructionOverrides}) {
+    _memory.load(_program.instructions);
+    _pointer = MemPointer(_memory);
+    _memory.input = IO.Input();
+    input.forEach((i) => _memory.input.write(i));
+
+    if (instructionOverrides != null) {
+      for (var override in instructionOverrides.entries) {
+        _memory(override.key, override.value);
+      }
     }
 
-    return this;
+    _timer = Timer.periodic(Duration(microseconds: 1), _opTick);
+    _completer = Completer();
   }
 
-  Intcode writeMem(int address, int value) {
-    _memory(address, value);
-    return this;
+  _opTick(Timer timer) {
+    try {
+      var halt = Operation.create(_pointer).exec();
+      if (halt) {
+        _timer.cancel();
+        _completer.complete(output);
+      }
+    } catch (e) {
+      _completer.completeError(e);
+    }
   }
-
-  int readMem(int address) => _memory[address];
 
   IO get output =>
       !_memory.output.isEmpty ? _memory.output : IO.Output(_memory[0]);
   int get outputLast => _memory.output.last;
 
-  readMemAll() => _memory.toString();
+  Future<IO> get onComplete => _completer?.future ?? Future.value();
 
-  reset() => loadProgram(_program);
+  kill() {
+    if (_timer.isActive) _timer.cancel();
+    if (!_completer.isCompleted) _completer.complete(null);
+    killed = true;
+  }
+}
+
+class Program {
+  String _name;
+  String _code;
+
+  Program(this._name, this._code);
+
+  List<int> get instructions =>
+      _code.split(',').map((i) => int.parse(i)).toList();
 }
 
 class Memory {
@@ -107,6 +162,8 @@ class MemPointer {
   int get input => _memory.input.read();
   set output(int val) => _memory.output.write(val);
 
+  reset() => _pointer = 0;
+
   operator [](int address) => _memory[address];
 }
 
@@ -151,14 +208,13 @@ class IO {
   int get last => _memory.last;
 
   int read([int address]) {
-    if (!isInput) throw 'Cannot read from Output';
+    if (_pointer >= _memory.length) throw 'Cannot read input!';
     var val = _memory[_pointer];
     _pointer++;
     return val;
   }
 
   write(int value, [int address]) {
-    if (isInput) throw 'Cannot write to Input';
     _memory.add(value);
   }
 
